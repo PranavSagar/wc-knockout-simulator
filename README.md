@@ -209,8 +209,9 @@ code needs to change** to run a different tournament:
   `[teamIdA, teamIdB]` pairs. The order also defines the bracket geometry (match
   `i` feeds match `floor(i/2)` of the next round).
 
-> The bundled rankings/fixtures are **illustrative placeholders** seeded by FIFA
-> rank until the real 2026 knockout draw is known. Swap them in when it is.
+> The bundled data is the **real 2026 FIFA World Cup Round of 32** — the 32 teams
+> that actually advanced from the group stage, laid out in FIFA's official fixed
+> bracket order, with FIFA rankings from the 1 April 2026 release.
 
 ---
 

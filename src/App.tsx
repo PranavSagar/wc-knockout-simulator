@@ -48,8 +48,7 @@ export default function App() {
           <a className="underline decoration-dotted hover:text-slate-300" href="https://flagcdn.com" target="_blank" rel="noreferrer">
             flagcdn
           </a>
-          . Rankings are illustrative placeholders — edit{' '}
-          <code className="rounded bg-white/10 px-1 py-0.5">src/data</code> to use the real draw.
+          . Real 2026 World Cup Round-of-32 bracket · FIFA rankings as of 1 Apr 2026.
         </footer>
       </motion.main>
 

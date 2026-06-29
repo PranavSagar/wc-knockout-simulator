@@ -1,33 +1,40 @@
 import type { RoundMeta } from '../types';
 
 /**
- * Round of 32 fixtures — the 16 opening matchups, as [teamIdA, teamIdB] pairs.
+ * Round of 32 — the REAL 2026 FIFA World Cup knockout bracket.
  *
- * This is the only seeding the app needs: every later round is *derived* from
- * the winners of these matches by the bracket engine. The order also defines the
- * bracket geometry (match i feeds into match floor(i/2) of the next round), so
- * the two strongest seeds sit in opposite halves and can only meet in the Final.
+ * The 16 opening matchups as [teamIdA, teamIdB] pairs. Crucially, the ORDER here
+ * is not cosmetic: the engine pairs match `i` with match `i+1` into the next
+ * round (match `i` feeds Round-of-16 match `floor(i/2)`). So this array is laid
+ * out to reproduce FIFA's official fixed bracket exactly — the same path to the
+ * final that the real teams face.
  *
- * Arranged by standard single-elimination seeding for 32:
- *   1v32 16v17 8v25 9v24 4v29 13v20 5v28 12v21 | 2v31 15v18 7v26 10v23 3v30 14v19 6v27 11v22
+ * Mapping to FIFA's official match numbers (R32 = 73–88), decoded from the
+ * official Round-of-16 feeds so the halves line up:
+ *   R16: M89(W74,W77) M90(W73,W75) M93(W83,W84) M94(W81,W82)
+ *        M91(W76,W78) M92(W79,W80) M95(W86,W88) M96(W85,W87)
+ *   QF:  M97(89,90) M98(93,94) M99(91,92) M100(95,96)
+ *   SF:  M101(97,98) M102(99,100)  →  Final(101,102)
+ *
+ * Index → official match → fixture:
  */
 export const ROUND_OF_32: ReadonlyArray<readonly [string, string]> = [
-  ['ar', 'sa'], // 1 v 32
-  ['mx', 'ch'], // 16 v 17
-  ['be', 'at'], // 8 v 25
-  ['it', 'ua'], // 9 v 24
-  ['eng', 'ec'], // 4 v 29
-  ['co', 'dk'], // 13 v 20
-  ['br', 'wal'], // 5 v 28
-  ['ma', 'ir'], // 12 v 21
-  ['fr', 'ng'], // 2 v 31
-  ['us', 'jp'], // 15 v 18
-  ['nl', 'rs'], // 7 v 26
-  ['de', 'au'], // 10 v 23
-  ['es', 'ca'], // 3 v 30
-  ['uy', 'sn'], // 14 v 19
-  ['pt', 'pl'], // 6 v 27
-  ['hr', 'kr'], // 11 v 22
+  ['de', 'py'], //  0 · M74 · Germany v Paraguay
+  ['fr', 'se'], //  1 · M77 · France v Sweden
+  ['ca', 'za'], //  2 · M73 · Canada v South Africa
+  ['nl', 'ma'], //  3 · M75 · Netherlands v Morocco
+  ['pt', 'hr'], //  4 · M83 · Portugal v Croatia
+  ['es', 'at'], //  5 · M84 · Spain v Austria
+  ['us', 'ba'], //  6 · M81 · USA v Bosnia & Herzegovina
+  ['be', 'sn'], //  7 · M82 · Belgium v Senegal
+  ['br', 'jp'], //  8 · M76 · Brazil v Japan
+  ['ci', 'no'], //  9 · M78 · Ivory Coast v Norway
+  ['mx', 'ec'], // 10 · M79 · Mexico v Ecuador
+  ['eng', 'cd'], // 11 · M80 · England v DR Congo
+  ['ar', 'cv'], // 12 · M86 · Argentina v Cape Verde
+  ['au', 'eg'], // 13 · M88 · Australia v Egypt
+  ['ch', 'dz'], // 14 · M85 · Switzerland v Algeria
+  ['co', 'gh'], // 15 · M87 · Colombia v Ghana
 ];
 
 /**
