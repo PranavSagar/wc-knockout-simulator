@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { useMemo } from 'react';
 import type { Match, Picks, Team } from '../types';
 import { applyPick, buildBracket, countDecided, getChampion, prunePicks } from '../lib/bracketEngine';
+import { onReset, onSelect } from '../lib/analytics';
 
 /**
  * Global state.
@@ -31,13 +32,23 @@ interface BracketState {
 
 export const useBracketStore = create<BracketState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       picks: {},
-      select: (matchId, teamId) =>
-        set((state) => ({ picks: applyPick(state.picks, matchId, teamId) })),
+      select: (matchId, teamId) => {
+        const prev = get().picks;
+        const next = applyPick(prev, matchId, teamId);
+        if (next === prev) return; // locked match or no-op — nothing to track
+        set({ picks: next });
+        // Analytics is a fire-and-forget side effect, kept out of the set() updater.
+        onSelect(prev, next, matchId);
+      },
       setPicks: (picks) => set({ picks: prunePicks(picks) }),
       normalize: () => set((state) => ({ picks: prunePicks(state.picks) })),
-      reset: () => set({ picks: {} }),
+      reset: () => {
+        const prev = get().picks;
+        set({ picks: {} });
+        onReset(prev);
+      },
     }),
     {
       name: 'wc-knockout-picks',

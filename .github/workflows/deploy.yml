@@ -36,6 +36,11 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Publishable PostHog client key — set as GitHub repo variables (not
+          # secrets). Unset is fine: analytics simply stays disabled in the build.
+          VITE_POSTHOG_KEY: ${{ vars.VITE_POSTHOG_KEY }}
+          VITE_POSTHOG_HOST: ${{ vars.VITE_POSTHOG_HOST }}
 
       - name: Deploy to Cloudflare Pages
         if: env.CF_API_TOKEN != '' && env.CF_ACCOUNT_ID != ''

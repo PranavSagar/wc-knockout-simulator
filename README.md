@@ -229,6 +229,27 @@ code needs to change** to run a different tournament:
 
 ---
 
+## 📊 Analytics & privacy
+
+Zero-cost, privacy-first usage analytics — see **[docs/analytics.md](docs/analytics.md)**
+for the full guide. In short:
+
+- **Cloudflare Web Analytics** (free, unlimited, cookieless) for traffic/audience.
+- **PostHog free tier** for product events, behind a swappable abstraction in
+  `src/lib/analytics/` — a typed event catalog (`bracket_completed`,
+  `match_predicted`, …) that answers "most-picked champion", "popular teams",
+  "upsets", "avg build time", completion funnel, and more via PostHog dashboards.
+- **Privacy-first:** no PII, cookieless, no autocapture/recording, Do-Not-Track
+  respected, one-click opt-out. No consent banner needed.
+- **Zero performance cost:** the PostHog SDK is dead-code-eliminated when no key is
+  set, and lazy-loaded on idle when it is — never in the initial bundle. Events are
+  batched, retried, offline-queued, and fire-and-forget.
+
+Analytics stays **off until you add `VITE_POSTHOG_KEY`** and enable Cloudflare Web
+Analytics — the app builds and runs fine without either.
+
+---
+
 ## ♿ Accessibility & performance notes
 
 - Team selections are real `<button>`s with `aria-pressed`, visible focus rings,

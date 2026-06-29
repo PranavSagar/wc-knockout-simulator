@@ -5,8 +5,10 @@ import { Header } from './components/Header';
 import { Bracket } from './components/Bracket';
 import { ChampionBanner } from './components/ChampionBanner';
 import { Toasts } from './components/Toasts';
+import { AnalyticsToggle } from './components/AnalyticsToggle';
 import { useBracketStore } from './store/bracketStore';
 import { readPicksFromUrl } from './lib/serialization';
+import { initAnalytics, onAppLoaded } from './lib/analytics';
 
 export default function App() {
   const setPicks = useBracketStore((s) => s.setPicks);
@@ -16,11 +18,14 @@ export default function App() {
   // On first load, a shared link (#p=...) takes precedence over saved state.
   // Either way, normalise so stale or now-locked picks are pruned.
   useEffect(() => {
+    initAnalytics();
     const shared = readPicksFromUrl();
     if (shared && Object.keys(shared).length > 0) {
       setPicks(shared);
+      onAppLoaded(shared, true);
     } else {
       normalize();
+      onAppLoaded(useBracketStore.getState().picks, false);
     }
     setReady(true);
   }, [setPicks, normalize]);
@@ -48,12 +53,17 @@ export default function App() {
 
         <ChampionBanner />
 
-        <footer className="mt-4 px-4 pb-8 text-center text-xs text-slate-500">
-          Built with React, Zustand &amp; Framer Motion · Flags by{' '}
-          <a className="underline decoration-dotted hover:text-slate-300" href="https://flagcdn.com" target="_blank" rel="noreferrer">
-            flagcdn
-          </a>
-          . Real 2026 World Cup Round-of-32 bracket · FIFA rankings as of 1 Apr 2026.
+        <footer className="mt-4 flex flex-col items-center gap-1 px-4 pb-8 text-center text-xs text-slate-500">
+          <p>
+            Built with React, Zustand &amp; Framer Motion · Flags by{' '}
+            <a className="underline decoration-dotted hover:text-slate-300" href="https://flagcdn.com" target="_blank" rel="noreferrer">
+              flagcdn
+            </a>
+            . Real 2026 World Cup Round-of-32 bracket · FIFA rankings as of 1 Apr 2026.
+          </p>
+          <p>
+            Privacy-friendly, cookieless analytics · <AnalyticsToggle />
+          </p>
         </footer>
       </motion.main>
 

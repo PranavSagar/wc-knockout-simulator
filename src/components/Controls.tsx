@@ -4,6 +4,7 @@ import { Download, RotateCcw, Share2, Upload } from 'lucide-react';
 import { useBracketStore } from '../store/bracketStore';
 import { useToastStore } from '../store/toastStore';
 import { buildShareUrl, clearUrlPicks, fromFileText, toFile } from '../lib/serialization';
+import { onExport, onImport, onShare } from '../lib/analytics';
 
 /**
  * Toolbar: Reset · Export · Import · Share. Each action is small and pure —
@@ -45,6 +46,7 @@ export function Controls() {
     a.download = `wc-predictions-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    onExport(picks);
     notify('Predictions exported', 'success');
   };
 
@@ -54,8 +56,10 @@ export function Controls() {
     if (!file) return;
     try {
       const text = await file.text();
-      setPicks(fromFileText(text));
+      const imported = fromFileText(text);
+      setPicks(imported);
       clearUrlPicks();
+      onImport(imported);
       notify('Predictions imported', 'success');
     } catch {
       notify('Could not read that file', 'error');
@@ -66,6 +70,7 @@ export function Controls() {
     const url = buildShareUrl(picks);
     // Reflect the shared state in the address bar too.
     history.replaceState(null, '', url);
+    onShare(picks);
     try {
       await navigator.clipboard.writeText(url);
       notify('Share link copied to clipboard', 'success');
