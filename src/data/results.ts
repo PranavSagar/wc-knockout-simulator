@@ -32,6 +32,8 @@ export interface OfficialResult {
 export const OFFICIAL_RESULTS: Record<string, OfficialResult> = {
   // 28 Jun · Canada 1–0 South Africa (Eustáquio, stoppage time) → Canada advance.
   [matchId(0, 2)]: { winnerId: 'ca', scoreA: 1, scoreB: 0 },
+  // 29 Jun · Brazil 2–1 Japan → Brazil advance.
+  [matchId(0, 8)]: { winnerId: 'br', scoreA: 2, scoreB: 1 },
 };
 
 /** Just the winners, for merging into the bracket derivation. */
