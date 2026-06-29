@@ -10,15 +10,18 @@ interface TeamRowProps {
   isWinner: boolean;
   /** The match is decided and this team lost. */
   isLoser: boolean;
+  /** Official, already-played result — not selectable. */
+  locked?: boolean;
   onSelect: () => void;
 }
 
 /**
  * One selectable team inside a match card. Renders a "TBD" placeholder when the
  * feeder match has not yet produced a winner. Winners glow emerald with a check;
- * losers stay visible but subdued so the outcome reads at a glance.
+ * losers stay visible but subdued so the outcome reads at a glance. Locked
+ * (already-played) rows are non-interactive.
  */
-function TeamRowComponent({ team, isWinner, isLoser, onSelect }: TeamRowProps) {
+function TeamRowComponent({ team, isWinner, isLoser, locked, onSelect }: TeamRowProps) {
   if (!team) {
     return (
       <div className="flex items-center gap-2.5 px-3 py-2.5 opacity-40">
@@ -32,12 +35,14 @@ function TeamRowComponent({ team, isWinner, isLoser, onSelect }: TeamRowProps) {
     <motion.button
       type="button"
       onClick={onSelect}
-      whileTap={{ scale: 0.97 }}
+      disabled={locked}
+      whileTap={locked ? undefined : { scale: 0.97 }}
       aria-pressed={isWinner}
       className={[
         'group/team relative flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors duration-300',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/70',
-        isWinner ? 'bg-win/10' : 'hover:bg-white/[0.06]',
+        locked ? 'cursor-default' : '',
+        isWinner ? 'bg-win/10' : locked ? '' : 'hover:bg-white/[0.06]',
         isLoser ? 'opacity-45 saturate-50' : 'opacity-100',
       ].join(' ')}
     >

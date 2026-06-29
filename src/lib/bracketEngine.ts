@@ -1,6 +1,10 @@
 import type { Match, Picks, Team } from '../types';
 import { ROUND_OF_32, ROUNDS } from '../data/fixtures';
 import { TEAMS_BY_ID } from '../data/teams';
+import { OFFICIAL_WINNERS, isLocked } from '../data/results';
+import { matchId } from './ids';
+
+export { matchId };
 
 /**
  * The bracket engine.
@@ -20,11 +24,19 @@ import { TEAMS_BY_ID } from '../data/teams';
  * trivially cheap — and we memoise it per `picks` reference at the React layer,
  * so the cost is paid at most once per interaction. We trade a few microseconds
  * for guaranteed consistency and far simpler code than mutating a shared tree.
+ *
+ * Official results: already-played matches (see data/results.ts) are merged on
+ * top of the user's picks, so they always win and form a fixed, consistent
+ * prefix of the bracket the user predicts the rest of.
  */
 
-/** Deterministic, stable match id from its position in the bracket. */
-export const matchId = (roundIndex: number, indexInRound: number): string =>
-  `r${roundIndex}m${indexInRound}`;
+/**
+ * Merge official (locked) results over the user's picks. Official results take
+ * precedence — a played match can't be re-predicted.
+ */
+function effectivePicks(userPicks: Picks): Picks {
+  return { ...userPicks, ...OFFICIAL_WINNERS };
+}
 
 /** A pick counts only if the team is one of the two current participants. */
 function resolveWinner(
@@ -41,7 +53,8 @@ function resolveWinner(
  * Build the full bracket (array of rounds, each an array of matches) from picks.
  * Pure and deterministic: same picks in => same bracket out.
  */
-export function buildBracket(picks: Picks): Match[][] {
+export function buildBracket(userPicks: Picks): Match[][] {
+  const picks = effectivePicks(userPicks);
   const rounds: Match[][] = [];
 
   // Round 0 — Round of 32: participants come straight from the fixtures.
@@ -56,6 +69,7 @@ export function buildBracket(picks: Picks): Match[][] {
       teamA,
       teamB,
       winnerId: resolveWinner(picks[id], teamA, teamB),
+      locked: isLocked(id),
     };
   });
   rounds.push(first);
@@ -77,6 +91,7 @@ export function buildBracket(picks: Picks): Match[][] {
         teamA,
         teamB,
         winnerId: resolveWinner(picks[id], teamA, teamB),
+        locked: isLocked(id),
       });
     }
     rounds.push(matches);
@@ -100,8 +115,9 @@ export function countDecided(rounds: Match[][]): number {
 }
 
 /**
- * Normalise a picks map: keep only the picks that survive derivation (i.e. are
- * still valid given everything upstream). Used after every mutation so the
+ * Normalise a USER picks map: keep only the picks that survive derivation (i.e.
+ * are still valid given everything upstream), excluding locked/official results
+ * (those live in data, not in user state). Used after every mutation so the
  * persisted/exported/shared state stays clean and free of orphaned entries.
  */
 export function prunePicks(picks: Picks): Picks {
@@ -109,7 +125,7 @@ export function prunePicks(picks: Picks): Picks {
   const next: Picks = {};
   for (const round of rounds) {
     for (const m of round) {
-      if (m.winnerId) next[m.id] = m.winnerId;
+      if (m.winnerId && !m.locked) next[m.id] = m.winnerId;
     }
   }
   return next;
@@ -117,11 +133,13 @@ export function prunePicks(picks: Picks): Picks {
 
 /**
  * Apply a click on `teamId` in `matchId`:
+ *  - locked (already-played) matches are immutable — the click is ignored,
  *  - clicking the current winner again clears the pick (toggle off),
  *  - otherwise the team is set as winner.
  * The result is pruned so any now-invalid downstream picks are dropped.
  */
 export function applyPick(picks: Picks, mId: string, teamId: string): Picks {
+  if (isLocked(mId)) return picks; // official result, not user-editable
   const next: Picks = { ...picks };
   if (next[mId] === teamId) {
     delete next[mId];

@@ -35,6 +35,11 @@ export interface Match {
   teamB?: Team;
   /** Id of the team the user picked to win this match (validated/derived). */
   winnerId?: string;
+  /**
+   * True when this match has an official, already-played result. Locked matches
+   * are pre-filled and cannot be changed by the user.
+   */
+  locked?: boolean;
 }
 
 /** The ONLY persisted state: a map of matchId -> winning teamId. */

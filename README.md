@@ -208,10 +208,24 @@ code needs to change** to run a different tournament:
 - **`fixtures.ts`** — set `ROUND_OF_32` to the 16 opening matchups as
   `[teamIdA, teamIdB]` pairs. The order also defines the bracket geometry (match
   `i` feeds match `floor(i/2)` of the next round).
+- **`results.ts`** — official, already-played results. Each entry **locks** a
+  match: its winner is pre-filled and can't be changed, and the score shows as a
+  full-time badge. As the tournament progresses, add one line per finished match:
+  ```ts
+  // Germany 2–1 Paraguay → Germany advance
+  [matchId(0, 0)]: { winnerId: 'de', scoreA: 2, scoreB: 1 },
+  // a knockout decided on penalties:
+  [matchId(0, 8)]: { winnerId: 'br', scoreA: 1, scoreB: 1, detail: 'PENS' },
+  ```
+  Locked results are merged on top of the user's picks by the engine, so they
+  always win and form a fixed prefix the user predicts the rest of. They live in
+  data (not user state), so Reset/Export/Share never touch them.
 
 > The bundled data is the **real 2026 FIFA World Cup Round of 32** — the 32 teams
-> that actually advanced from the group stage, laid out in FIFA's official fixed
-> bracket order, with FIFA rankings from the 1 April 2026 release.
+> that actually advanced from the group stage, in FIFA's official fixed bracket
+> order, FIFA rankings from the 1 April 2026 release. Played matches are
+> pre-filled and locked (Canada 1–0 South Africa at the time of writing); add the
+> rest to `results.ts` as they finish.
 
 ---
 

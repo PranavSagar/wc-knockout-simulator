@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MousePointerClick } from 'lucide-react';
+import { Lock, MousePointerClick } from 'lucide-react';
 import { Header } from './components/Header';
 import { Bracket } from './components/Bracket';
 import { ChampionBanner } from './components/ChampionBanner';
@@ -10,16 +10,20 @@ import { readPicksFromUrl } from './lib/serialization';
 
 export default function App() {
   const setPicks = useBracketStore((s) => s.setPicks);
+  const normalize = useBracketStore((s) => s.normalize);
   const [ready, setReady] = useState(false);
 
   // On first load, a shared link (#p=...) takes precedence over saved state.
+  // Either way, normalise so stale or now-locked picks are pruned.
   useEffect(() => {
     const shared = readPicksFromUrl();
     if (shared && Object.keys(shared).length > 0) {
       setPicks(shared);
+    } else {
+      normalize();
     }
     setReady(true);
-  }, [setPicks]);
+  }, [setPicks, normalize]);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -35,7 +39,8 @@ export default function App() {
         <div className="flex items-center justify-center px-4">
           <span className="glass inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium text-slate-300">
             <MousePointerClick className="h-3.5 w-3.5 text-accent" />
-            Tap a team to send them through. Everything downstream updates automatically.
+            Tap a team to send them through. Played matches
+            <Lock className="h-3 w-3 text-gold" /> are locked to their real result.
           </span>
         </div>
 

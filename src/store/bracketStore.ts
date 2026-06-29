@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useMemo } from 'react';
 import type { Match, Picks, Team } from '../types';
-import { applyPick, buildBracket, countDecided, getChampion } from '../lib/bracketEngine';
+import { applyPick, buildBracket, countDecided, getChampion, prunePicks } from '../lib/bracketEngine';
 
 /**
  * Global state.
@@ -23,7 +23,9 @@ interface BracketState {
   select: (matchId: string, teamId: string) => void;
   /** Replace all picks (used by Import / Share-link hydration). */
   setPicks: (picks: Picks) => void;
-  /** Clear the whole bracket. */
+  /** Drop any stale/invalid/now-locked picks (run once after hydration). */
+  normalize: () => void;
+  /** Clear the whole bracket (official results stay — they're data). */
   reset: () => void;
 }
 
@@ -33,7 +35,8 @@ export const useBracketStore = create<BracketState>()(
       picks: {},
       select: (matchId, teamId) =>
         set((state) => ({ picks: applyPick(state.picks, matchId, teamId) })),
-      setPicks: (picks) => set({ picks }),
+      setPicks: (picks) => set({ picks: prunePicks(picks) }),
+      normalize: () => set((state) => ({ picks: prunePicks(state.picks) })),
       reset: () => set({ picks: {} }),
     }),
     {
