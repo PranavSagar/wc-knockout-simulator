@@ -1,0 +1,52 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+
+# Avoid overlapping deploys racing each other on rapid pushes.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    # Expose secrets as job-level env so we can gracefully skip the deploy step
+    # when they're not configured yet (keeps CI green instead of failing red).
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        if: env.CF_API_TOKEN != '' && env.CF_ACCOUNT_ID != ''
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ env.CF_API_TOKEN }}
+          accountId: ${{ env.CF_ACCOUNT_ID }}
+          # `pages deploy` creates the project on first run if it doesn't exist.
+          command: pages deploy dist --project-name=wc-knockout-simulator --branch=main
+
+      - name: Deployment skipped notice
+        if: env.CF_API_TOKEN == '' || env.CF_ACCOUNT_ID == ''
+        run: |
+          echo "::notice title=Cloudflare deploy skipped::Build succeeded, but CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets are not set, so the deploy step was skipped. Add them in repo Settings → Secrets and variables → Actions to enable auto-deploy."

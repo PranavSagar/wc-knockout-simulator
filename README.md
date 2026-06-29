@@ -152,16 +152,49 @@ Requires Node 18+.
 
 ## 🌍 Deploying
 
-The build output (`dist/`) is fully static — no server required.
+The build output (`dist/`) is fully static — no server required. Share links use
+the URL **hash** (`#p=...`), so there's no SPA routing to configure — the same
+single `index.html` handles every link out of the box. The same `dist/` deploys
+cleanly to Netlify, Vercel, GitHub Pages, or any static host.
 
-**Cloudflare Pages**
+There are two ways to ship to Cloudflare Pages:
+
+### Option A — GitHub Actions (included)
+
+This repo ships a workflow at `.github/workflows/deploy.yml` that builds on every
+push to `main` and deploys via `wrangler`. The deploy step **skips gracefully**
+(CI stays green) until you add two repository secrets, so nothing fails before
+it's wired up. One-time setup:
+
+1. **Create a Cloudflare API token** — Cloudflare dashboard → *My Profile → API
+   Tokens → Create Token* → use the **"Edit Cloudflare Pages"** template (or a
+   custom token with the *Account → Cloudflare Pages → Edit* permission).
+2. **Find your Account ID** — on any Cloudflare dashboard page (right sidebar), or
+   run `npx wrangler whoami`.
+3. **Add both as repo secrets** (Settings → Secrets and variables → Actions → *New
+   repository secret*), or from your terminal:
+   ```bash
+   gh secret set CLOUDFLARE_API_TOKEN     # paste the token when prompted
+   gh secret set CLOUDFLARE_ACCOUNT_ID    # paste the account id when prompted
+   ```
+   > Add the token via the prompt (not inline) so it never lands in shell history.
+
+The first deploy creates the `wc-knockout-simulator` Pages project automatically;
+subsequent pushes update it. Trigger it by pushing to `main` or via the Actions
+tab (*Run workflow*).
+
+### Option B — Cloudflare Pages Git integration (no secrets)
+
+Prefer zero CI maintenance and automatic per-PR preview deployments? Skip the
+workflow entirely and connect the repo in the Cloudflare dashboard instead:
+*Workers & Pages → Create → Pages → Connect to Git*, then set:
+
 - Framework preset: **Vite**
 - Build command: `npm run build`
 - Build output directory: `dist`
 
-Share links use the URL **hash** (`#p=...`), so there's no SPA routing to
-configure — the same single `index.html` handles every link out of the box. The
-same `dist/` deploys cleanly to Netlify, Vercel, GitHub Pages, or any static host.
+Cloudflare then builds and deploys on every push. (If you go this route, you can
+delete `.github/workflows/deploy.yml` to avoid running both.)
 
 ---
 
