@@ -85,6 +85,11 @@ export function track<K extends AnalyticsEventName>(name: K, props: AnalyticsEve
   }
 }
 
+/** Whether a product-analytics backend is actually configured (key present). */
+export function isAnalyticsConfigured(): boolean {
+  return Boolean(import.meta.env.VITE_POSTHOG_KEY);
+}
+
 export function isOptedOut(): boolean {
   return storedOptOut();
 }

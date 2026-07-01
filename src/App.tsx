@@ -8,7 +8,7 @@ import { Toasts } from './components/Toasts';
 import { AnalyticsToggle } from './components/AnalyticsToggle';
 import { useBracketStore } from './store/bracketStore';
 import { readPicksFromUrl } from './lib/serialization';
-import { initAnalytics, onAppLoaded } from './lib/analytics';
+import { initAnalytics, isAnalyticsConfigured, onAppLoaded } from './lib/analytics';
 
 export default function App() {
   const setPicks = useBracketStore((s) => s.setPicks);
@@ -61,9 +61,11 @@ export default function App() {
             </a>
             . Real 2026 World Cup Round-of-32 bracket · FIFA rankings as of 1 Apr 2026.
           </p>
-          <p>
-            Privacy-friendly, cookieless analytics · <AnalyticsToggle />
-          </p>
+          {isAnalyticsConfigured() && (
+            <p>
+              Privacy-friendly, cookieless analytics · <AnalyticsToggle />
+            </p>
+          )}
         </footer>
       </motion.main>
 

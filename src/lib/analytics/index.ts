@@ -7,5 +7,5 @@
  *
  * See ../../../docs/analytics.md for the event catalog and dashboard recipes.
  */
-export { initAnalytics, track, optIn, optOut, isOptedOut } from './client';
+export { initAnalytics, track, optIn, optOut, isOptedOut, isAnalyticsConfigured } from './client';
 export { onAppLoaded, onSelect, onReset, onExport, onImport, onShare } from './tracking';
